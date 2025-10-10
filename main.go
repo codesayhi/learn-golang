@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 //// Khai báo biến
 //var (
 //	count = 0 //private
@@ -71,11 +73,38 @@ package main
 //	return dai * rong
 //}
 
-//const pi float32 = 3.1415926
+// const pi float32 = 3.1415926
 //
-//func tinhChuVi(bankinh float32) float32 {
-//	return 2 * pi * bankinh
-//}
+//	func tinhChuVi(bankinh float32) float32 {
+//		return 2 * pi * bankinh
+//	}
+//
+//	func namNhuan(nam int) bool {
+//		if nam%400 == 0 {
+//			return true
+//		}
+//		if nam%4 == 0 && nam%100 != 0 {
+//			return true
+//		}
+//		return false
+//	}
+func fibonacif(n int) []int {
+	if n == 0 {
+		return []int{}
+	} else if n == 1 {
+		return []int{0}
+	} else if n == 2 {
+		return []int{0, 1}
+	} else {
+		arr := make([]int, n)
+		arr[0] = 0
+		arr[1] = 1
+		for i := 2; i < n; i++ {
+			arr[i] = arr[i-1] + arr[i-2]
+		}
+		return arr
+	}
+}
 
 func main() {
 	////Slide - nó giống như mảng nhưng có thể thay đổi kích thước
@@ -115,4 +144,18 @@ func main() {
 	//
 	//fmt.Println("Chu vị hình tròn là : ", tinhChuVi(bankinh))
 	//
+	//var nam int
+	//fmt.Print("Nhập năm: ")
+	//fmt.Scanln(&nam)
+	//
+	//a := namNhuan(nam)
+	//if a == true {
+	//	fmt.Printf("Năm %v là năm nhuận \n ", nam)
+	//} else {
+	//	fmt.Printf("Năm %v không phải năm nhuận \n ", nam)
+	//}
+
+	//
+	fmt.Println(fibonacif(7))
+
 }
