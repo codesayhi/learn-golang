@@ -106,6 +106,51 @@ func fibonacif(n int) []int {
 	}
 }
 
+func sumFibonaci(n int) int {
+	if n == 0 || n == 1 {
+		return 0
+	}
+	a := 0
+	b := 1
+	sum := a + b
+	for i := 2; i < n; i++ {
+		next := a + b
+		sum += next
+		a = b
+		b = next
+	}
+	return sum
+}
+func checkFibonacci(n int) bool {
+	if n < 0 {
+		return false
+	}
+	a, b := 0, 1
+	for a <= n {
+		if a == n {
+			return true
+		}
+		a, b = b, a+b
+	}
+	return false
+}
+
+//func checkFibonacci(n int) bool {
+//	if n < 0 {
+//		return false
+//	}
+//	a, b := 0, 1
+//	for {
+//		if a == n {            // trúng
+//			return true
+//		}
+//		if a > n {             // vượt rồi thì không thuộc
+//			return false
+//		}
+//		a, b = b, a+b          // tiến bước
+//	}
+//}
+
 func main() {
 	////Slide - nó giống như mảng nhưng có thể thay đổi kích thước
 	////colors := []string{"red", "blue", "green"}
@@ -157,5 +202,6 @@ func main() {
 
 	//
 	fmt.Println(fibonacif(7))
+	fmt.Println(sumFibonaci(12))
 
 }
