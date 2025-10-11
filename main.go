@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 //// Khai báo biến
 //var (
 //	count = 0 //private
@@ -121,11 +119,16 @@ func sumFibonaci(n int) int {
 	}
 	return sum
 }
+
 func checkFibonacci(n int) bool {
+	// Nếu n nhỏ hơn 0 => số âm => loại
 	if n < 0 {
 		return false
 	}
-	a, b := 0, 1
+
+	//Khỏi tạo 2 số khởi đầu của dãy số
+	var a, b int = 0, 1
+	//Cách 1: Ở đây không chọn biến b vì b là số thứ 2 trong bảng số fibonacci, phải chọn số đầu tiên
 	for a <= n {
 		if a == n {
 			return true
@@ -133,23 +136,25 @@ func checkFibonacci(n int) bool {
 		a, b = b, a+b
 	}
 	return false
-}
 
-//func checkFibonacci(n int) bool {
-//	if n < 0 {
-//		return false
-//	}
-//	a, b := 0, 1
-//	for {
-//		if a == n {            // trúng
-//			return true
-//		}
-//		if a > n {             // vượt rồi thì không thuộc
-//			return false
-//		}
-//		a, b = b, a+b          // tiến bước
-//	}
-//}
+	////	Cách 2: for vô hạn (while)
+	//for {
+	//	// a > n => a n không phải số fibonacii vì a đã lớn hơn n
+	//	if a > n {
+	//		return false
+	//	} else {
+	//		if a == n {
+	//			return true
+	//		}
+	//		a, b = b, a+b
+	//	}
+	//}
+}
+func maxFibonacci(n int) int {
+	a := 0
+	b := 1
+
+}
 
 func main() {
 	////Slide - nó giống như mảng nhưng có thể thay đổi kích thước
@@ -201,7 +206,11 @@ func main() {
 	//}
 
 	//
-	fmt.Println(fibonacif(7))
-	fmt.Println(sumFibonaci(12))
+	//fmt.Println(fibonacif(7))
+	//fmt.Println(sumFibonaci(12))
+	//s := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 21, 22, 34, 35, 55, 56, 89}
+	//for i := 0; i < len(s); i++ {
+	//	fmt.Printf("%v : %v\n", s[i], checkFibonacci(s[i]))
+	//}
 
 }
