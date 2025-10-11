@@ -154,6 +154,21 @@ func maxFibonacci(n int) int {
 	a := 0
 	b := 1
 
+	//for a <= n {
+	//	if a == n {
+	//		return a
+	//	} else if b > n {
+	//		return a
+	//	}
+	//	a, b = b, a+b
+	//
+	//}
+	//return a
+	//Cách 2
+	for b <= n {
+		a, b = b, a+b
+	}
+	return a
 }
 
 func main() {
