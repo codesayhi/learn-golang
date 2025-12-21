@@ -140,3 +140,61 @@
 //	rw.Read(data)
 //	rw.Write(data)
 //}
+
+//package main
+//
+//import (
+//	"fmt"
+//	"log"
+//)
+//
+//type Notify interface {
+//	Send(msg string) error
+//}
+//
+//// ===============
+//type Email struct {
+//	Email string
+//}
+//
+//type Phone struct {
+//	Phone string
+//}
+//
+//type Slack struct {
+//	Channel string
+//}
+//
+/////
+//
+//func (e Email) Send(msg string) error {
+//	fmt.Printf("Gửi Notify đến %s: %s\n", e.Email, msg)
+//	return nil
+//}
+//
+//func (p Phone) Send(msg string) error {
+//	fmt.Printf("Gửi Notify đến %s: %s\n", p.Phone, msg)
+//	return nil
+//}
+//
+//func (s Slack) Send(msg string) error {
+//	fmt.Printf("Gửi Notify đến %s: %s\n", s.Channel, msg)
+//	return nil
+//}
+//
+//func SendAllNotify(ntf []Notify, msg string) {
+//	for _, n := range ntf {
+//		if err := n.Send(msg); err != nil {
+//			log.Println("Lỗi")
+//		}
+//	}
+//}
+//func main() {
+//	e := &Email{"email"}
+//	p := &Phone{"phone"}
+//	s := Slack{"slack"}
+//
+//	list := []Notify{e, p, s}
+//
+//	SendAllNotify(list, "Hello World")
+//}
