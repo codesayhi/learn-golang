@@ -167,17 +167,17 @@
 //
 /////
 //
-//func (e Email) Send(msg string) error {
+//func (e *Email) Send(msg string) error {
 //	fmt.Printf("Gửi Notify đến %s: %s\n", e.Email, msg)
 //	return nil
 //}
 //
-//func (p Phone) Send(msg string) error {
+//func (p *Phone) Send(msg string) error {
 //	fmt.Printf("Gửi Notify đến %s: %s\n", p.Phone, msg)
 //	return nil
 //}
 //
-//func (s Slack) Send(msg string) error {
+//func (s *Slack) Send(msg string) error {
 //	fmt.Printf("Gửi Notify đến %s: %s\n", s.Channel, msg)
 //	return nil
 //}
@@ -192,9 +192,74 @@
 //func main() {
 //	e := &Email{"email"}
 //	p := &Phone{"phone"}
-//	s := Slack{"slack"}
+//	s := &Slack{"slack"}
 //
 //	list := []Notify{e, p, s}
 //
 //	SendAllNotify(list, "Hello World")
 //}
+
+package main
+
+import (
+	"fmt"
+	"sync" // 1. Import thư viện đồng bộ
+	"time"
+)
+
+type Notify interface {
+	Send(msg string) error
+}
+
+type Email struct{ Address string }
+type Phone struct{ Number string }
+type Slack struct{ Webhook string }
+
+func (e *Email) Send(msg string) error {
+	time.Sleep(time.Second) // Giả lập mạng chậm 1s
+	fmt.Printf("[EMAIL] Đã gửi tới %s\n", e.Address)
+	return nil
+}
+
+func (p *Phone) Send(msg string) error {
+	time.Sleep(time.Second)
+	fmt.Printf("[SMS] Đã gửi tới %s\n", p.Number)
+	return nil
+}
+
+func (s *Slack) Send(msg string) error {
+	time.Sleep(time.Second)
+	fmt.Printf("[SLACK] Đã gửi tới %s\n", s.Webhook)
+	return nil
+}
+
+func SendAllNotify(ntf []Notify, msg string) {
+	var wg sync.WaitGroup // 2. Khai báo bộ đếm
+
+	for _, n := range ntf {
+		wg.Add(1) // 3. Mỗi lần tạo nhánh mới, tăng bộ đếm lên 1
+
+		// 4. Chạy hàm ẩn danh với từ khóa 'go'
+		go func(target Notify) {
+			defer wg.Done() // 5. Khi hàm này chạy xong, giảm bộ đếm xuống 1
+			target.Send(msg)
+		}(n) // Truyền n vào tham số của hàm để tránh lỗi closure
+	}
+
+	wg.Wait() // 6. Chặn ở đây cho đến khi bộ đếm về 0
+}
+
+func main() {
+	start := time.Now()
+
+	list := []Notify{
+		&Email{"admin@mail.com"},
+		&Phone{"09123"},
+		&Slack{"https://slack.com/123"},
+	}
+
+	fmt.Println("Bắt đầu gửi thông báo đồng thời...")
+	SendAllNotify(list, "Hello Concurrent World!")
+
+	fmt.Printf("Hoàn thành! Tổng thời gian: %v\n", time.Since(start))
+}
