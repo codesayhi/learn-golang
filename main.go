@@ -198,68 +198,133 @@
 //
 //	SendAllNotify(list, "Hello World")
 //}
+//
+//package main
+//
+//import (
+//	"fmt"
+//	"sync" // 1. Import thư viện đồng bộ
+//	"time"
+//)
+//
+//type Notify interface {
+//	Send(msg string) error
+//}
+//
+//type Email struct{ Address string }
+//type Phone struct{ Number string }
+//type Slack struct{ Webhook string }
+//
+//func (e *Email) Send(msg string) error {
+//	time.Sleep(time.Second) // Giả lập mạng chậm 1s
+//	fmt.Printf("[EMAIL] Đã gửi tới %s\n", e.Address)
+//	return nil
+//}
+//
+//func (p *Phone) Send(msg string) error {
+//	time.Sleep(time.Second)
+//	fmt.Printf("[SMS] Đã gửi tới %s\n", p.Number)
+//	return nil
+//}
+//
+//func (s *Slack) Send(msg string) error {
+//	time.Sleep(time.Second)
+//	fmt.Printf("[SLACK] Đã gửi tới %s\n", s.Webhook)
+//	return nil
+//}
+//
+//func SendAllNotify(ntf []Notify, msg string) {
+//	var wg sync.WaitGroup // 2. Khai báo bộ đếm
+//
+//	for _, n := range ntf {
+//		wg.Add(1) // 3. Mỗi lần tạo nhánh mới, tăng bộ đếm lên 1
+//
+//		// 4. Chạy hàm ẩn danh với từ khóa 'go'
+//		go func(target Notify) {
+//			defer wg.Done() // 5. Khi hàm này chạy xong, giảm bộ đếm xuống 1
+//			target.Send(msg)
+//		}(n) // Truyền n vào tham số của hàm để tránh lỗi closure
+//	}
+//
+//	wg.Wait() // 6. Chặn ở đây cho đến khi bộ đếm về 0
+//}
+//
+//func main() {
+//	start := time.Now()
+//
+//	list := []Notify{
+//		&Email{"admin@mail.com"},
+//		&Phone{"09123"},
+//		&Slack{"https://slack.com/123"},
+//	}
+//
+//	fmt.Println("Bắt đầu gửi thông báo đồng thời...")
+//	SendAllNotify(list, "Hello Concurrent World!")
+//
+//	fmt.Printf("Hoàn thành! Tổng thời gian: %v\n", time.Since(start))
+//}
 
 package main
 
 import (
 	"fmt"
-	"sync" // 1. Import thư viện đồng bộ
+	"math/rand"
 	"time"
 )
 
+// 1. Định nghĩa Interface và các Struct (như cũ)
 type Notify interface {
-	Send(msg string) error
+	Send(msg string) string // Thay vì trả về error, trả về string để dễ dùng channel
 }
 
-type Email struct{ Address string }
+type Email struct{ Name string }
 type Phone struct{ Number string }
 type Slack struct{ Webhook string }
 
-func (e *Email) Send(msg string) error {
-	time.Sleep(time.Second) // Giả lập mạng chậm 1s
-	fmt.Printf("[EMAIL] Đã gửi tới %s\n", e.Address)
-	return nil
+func (e Email) Send(msg string) string {
+	// Giả lập thời gian gửi ngẫu nhiên từ 1-5 giây
+	delay := rand.Intn(5) + 1
+	time.Sleep(time.Duration(delay) * time.Second)
+	return fmt.Sprintf("Email gửi tới %s sau %ds", e.Name, delay)
+}
+func (p Phone) Send(msg string) string {
+	delay := rand.Intn(5) + 1
+	time.Sleep(time.Duration(delay) * time.Second)
+	return fmt.Sprintf("Email gửi tới %s sau %ds", p.Number, delay)
 }
 
-func (p *Phone) Send(msg string) error {
-	time.Sleep(time.Second)
-	fmt.Printf("[SMS] Đã gửi tới %s\n", p.Number)
-	return nil
-}
-
-func (s *Slack) Send(msg string) error {
-	time.Sleep(time.Second)
-	fmt.Printf("[SLACK] Đã gửi tới %s\n", s.Webhook)
-	return nil
-}
-
-func SendAllNotify(ntf []Notify, msg string) {
-	var wg sync.WaitGroup // 2. Khai báo bộ đếm
-
-	for _, n := range ntf {
-		wg.Add(1) // 3. Mỗi lần tạo nhánh mới, tăng bộ đếm lên 1
-
-		// 4. Chạy hàm ẩn danh với từ khóa 'go'
-		go func(target Notify) {
-			defer wg.Done() // 5. Khi hàm này chạy xong, giảm bộ đếm xuống 1
-			target.Send(msg)
-		}(n) // Truyền n vào tham số của hàm để tránh lỗi closure
-	}
-
-	wg.Wait() // 6. Chặn ở đây cho đến khi bộ đếm về 0
+func (s Slack) Send(msg string) string {
+	delay := rand.Intn(5) + 1
+	time.Sleep(time.Duration(delay) * time.Second)
+	return fmt.Sprintf("Email gửi tới %s sau %ds", s.Webhook, delay)
 }
 
 func main() {
-	start := time.Now()
-
+	results := make(chan string, 3)
 	list := []Notify{
-		&Email{"admin@mail.com"},
-		&Phone{"09123"},
-		&Slack{"https://slack.com/123"},
+		Email{Name: "Sinh Viên Go"},
+		Phone{Number: "0911098342"},
+		Slack{Webhook: "http.com"},
 	}
 
-	fmt.Println("Bắt đầu gửi thông báo đồng thời...")
-	SendAllNotify(list, "Hello Concurrent World!")
+	for _, n := range list {
+		go func(target Notify) {
+			results <- target.Send("Chào bạn!")
+		}(n)
+	}
 
-	fmt.Printf("Hoàn thành! Tổng thời gian: %v\n", time.Since(start))
+	fmt.Println("Đang đợi kết quả...")
+
+	// Tối ưu: Tạo 1 đồng hồ tổng cho cả quá trình
+	timeout := time.After(3 * time.Second)
+
+	for i := 0; i < len(list); i++ {
+		select {
+		case res := <-results:
+			fmt.Println("THÀNH CÔNG:", res)
+		case <-timeout: // Dùng chung 1 channel timeout
+			fmt.Println("THẤT BẠI: Quá thời gian tổng 3s, dừng các báo cáo còn lại!")
+			return // Thoát luôn vì đã hết giờ tổng
+		}
+	}
 }
