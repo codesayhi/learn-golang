@@ -409,8 +409,6 @@
 
 package main
 
-import "fmt"
-
 //func main() {
 //	numbers := []int{1, 2, 3, 4, 5}
 //	ch := make(chan int)
@@ -479,63 +477,114 @@ import "fmt"
 //	}
 //}
 
-type Employee interface {
-	CalculateSalary() int
-	GetName() string
-}
+//type Employee interface {
+//	CalculateSalary() int
+//	GetName() string
+//}
+//
+//type FullTime struct {
+//	Name   string
+//	Salary int
+//}
+//
+//func (f *FullTime) CalculateSalary() int {
+//	return f.Salary
+//}
+//
+//func (f *FullTime) GetName() string {
+//	return f.Name
+//}
+//
+//type Contractor struct {
+//	Name       string
+//	HourlyRate int
+//	Hours      int
+//}
+//
+//func (c *Contractor) CalculateSalary() int {
+//	return c.Hours * c.HourlyRate
+//}
+//
+//func (c *Contractor) GetName() string {
+//	return c.Name
+//}
+//
+//func SalaryEmployee(employee []Employee) {
+//	for _, employee := range employee {
+//		fmt.Printf("%s có lương là %d \n ", employee.GetName(), employee.CalculateSalary())
+//	}
+//}
+//
+//func main() {
+//	start := time.Now()
+//	employees := make([]Employee, 0, 100)
+//
+//	for i := 1; i <= 100; i++ {
+//		if i%2 == 0 {
+//			// Tạo nhân viên FullTime cho các số chẵn
+//			employees = append(employees, &FullTime{
+//				Name:   fmt.Sprintf("Nhân viên FT %d", i),
+//				Salary: 15000000 + (i * 100000), // Lương tăng dần chút cho vui
+//			})
+//		} else {
+//			// Tạo nhân viên Contractor cho các số lẻ
+//			employees = append(employees, &Contractor{
+//				Name:       fmt.Sprintf("Nhân viên CT %d", i),
+//				HourlyRate: 200000,
+//				Hours:      80 + (i % 40), // Số giờ ngẫu nhiên từ 80-120
+//			})
+//		}
+//	}
+//
+//	SalaryEmployee(employees)
+//
+//	fmt.Println("Thời gian : ", time.Since(start))
+//}
 
-type FullTime struct {
-	Name   string
-	Salary int
-}
-
-func (f *FullTime) CalculateSalary() int {
-	return f.Salary
-}
-
-func (f *FullTime) GetName() string {
-	return f.Name
-}
-
-type Contractor struct {
-	Name       string
-	HourlyRate int
-	Hours      int
-}
-
-func (c *Contractor) CalculateSalary() int {
-	return c.Hours * c.HourlyRate
-}
-
-func (c *Contractor) GetName() string {
-	return c.Name
-}
-
-func SalaryEmployee(employee []Employee) {
-	for _, employee := range employee {
-		fmt.Printf("%s có lương là %d \n ", employee.GetName(), employee.CalculateSalary())
-	}
-}
-
-func main() {
-	employees := make([]Employee, 0, 100)
-
-	for i := 1; i <= 100; i++ {
-		if i%2 == 0 {
-			// Tạo nhân viên FullTime cho các số chẵn
-			employees = append(employees, &FullTime{
-				Name:   fmt.Sprintf("Nhân viên FT %d", i),
-				Salary: 15000000 + (i * 100000), // Lương tăng dần chút cho vui
-			})
-		} else {
-			// Tạo nhân viên Contractor cho các số lẻ
-			employees = append(employees, &Contractor{
-				Name:       fmt.Sprintf("Nhân viên CT %d", i),
-				HourlyRate: 200000,
-				Hours:      80 + (i % 40), // Số giờ ngẫu nhiên từ 80-120
-			})
-		}
-	}
-
-	SalaryEmployee(employees)
-}
+//type Filter interface {
+//	Process(input string) string
+//}
+//
+//type UpperFilter struct{}
+//
+//type CensorFilter struct {
+//	BadWord string
+//}
+//
+//type TrimFilter struct{}
+//
+//func (f *UpperFilter) Process(input string) string {
+//	return strings.ToUpper(input)
+//}
+//
+//func (f *CensorFilter) Process(input string) string {
+//	return strings.ReplaceAll(input, f.BadWord, "***")
+//}
+//func (f *TrimFilter) Process(input string) string {
+//	return strings.TrimSpace(input)
+//}
+//
+//func RunPipeline(text string, filters []Filter) string {
+//	result := text
+//	for _, f := range filters {
+//		// Kết quả của filter này là đầu vào của filter tiếp theo
+//		result = f.Process(result)
+//	}
+//	return result
+//}
+//
+//func main() {
+//	rawText := "   xin chào, đây là một nội dung xấu cần xử lý   "
+//
+//	// Khởi tạo danh sách các bộ lọc theo thứ tự muốn chạy
+//	pipeline := []Filter{
+//		&TrimFilter{},                 // 1. Xóa khoảng trắng trước
+//		&CensorFilter{BadWord: "xấu"}, // 2. Chặn từ nhạy cảm
+//		&UpperFilter{},                // 3. Viết hoa tất cả cuối cùng
+//	}
+//
+//	finalText := RunPipeline(rawText, pipeline)
+//
+//	fmt.Println("Gốc:", rawText)
+//	fmt.Println("Sau xử lý:", finalText)
+//}
