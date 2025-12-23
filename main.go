@@ -264,67 +264,177 @@
 //	fmt.Printf("Hoàn thành! Tổng thời gian: %v\n", time.Since(start))
 //}
 
+//package main
+//
+//import (
+//	"fmt"
+//	"math/rand"
+//	"time"
+//)
+//
+//// 1. Định nghĩa Interface và các Struct (như cũ)
+//type Notify interface {
+//	Send(msg string) string // Thay vì trả về error, trả về string để dễ dùng channel
+//}
+//
+//type Email struct{ Name string }
+//type Phone struct{ Number string }
+//type Slack struct{ Webhook string }
+//
+//func (e Email) Send(msg string) string {
+//	// Giả lập thời gian gửi ngẫu nhiên từ 1-5 giây
+//	delay := rand.Intn(5) + 1
+//	time.Sleep(time.Duration(delay) * time.Second)
+//	return fmt.Sprintf("Email gửi tới %s sau %ds", e.Name, delay)
+//}
+//func (p Phone) Send(msg string) string {
+//	delay := rand.Intn(5) + 1
+//	time.Sleep(time.Duration(delay) * time.Second)
+//	return fmt.Sprintf("Email gửi tới %s sau %ds", p.Number, delay)
+//}
+//
+//func (s Slack) Send(msg string) string {
+//	delay := rand.Intn(5) + 1
+//	time.Sleep(time.Duration(delay) * time.Second)
+//	return fmt.Sprintf("Email gửi tới %s sau %ds", s.Webhook, delay)
+//}
+//
+//func main() {
+//	results := make(chan string, 3)
+//	list := []Notify{
+//		Email{Name: "Sinh Viên Go"},
+//		Phone{Number: "0911098342"},
+//		Slack{Webhook: "http.com"},
+//	}
+//
+//	for _, n := range list {
+//		go func(target Notify) {
+//			results <- target.Send("Chào bạn!")
+//		}(n)
+//	}
+//
+//	fmt.Println("Đang đợi kết quả...")
+//
+//	// Tối ưu: Tạo 1 đồng hồ tổng cho cả quá trình
+//	timeout := time.After(3 * time.Second)
+//
+//	for i := 0; i < len(list); i++ {
+//		select {
+//		case res := <-results:
+//			fmt.Println("THÀNH CÔNG:", res)
+//		case <-timeout: // Dùng chung 1 channel timeout
+//			fmt.Println("THẤT BẠI: Quá thời gian tổng 3s, dừng các báo cáo còn lại!")
+//			return // Thoát luôn vì đã hết giờ tổng
+//		}
+//	}
+//}
+
+//package main
+//
+//import (
+//	"fmt"
+//	"time"
+//)
+//
+//func HocGo() {
+//	fmt.Println("HocGo")
+//}
+//
+//func UongCafe() {
+//	fmt.Println("UongCafe")
+//}
+//
+//func main() {
+//	go HocGo()
+//	go UongCafe()
+//	time.Sleep(10 * time.Microsecond)
+//}
+
+// package main
+//
+// import (
+//
+//	"fmt"
+//	"time"
+//
+// )
+//
+//	func main() {
+//		// 1. Tạo một channel kiểu string (Unbuffered - Không bộ đệm)
+//		ch := make(chan string)
+//
+//		// 2. Chạy 1 Goroutine (Nhân viên)
+//		go func() {
+//			fmt.Println("Nhân viên: Đang chuẩn bị gửi mail...")
+//
+//			// Giả lập việc gửi mail tốn 2 giây
+//			time.Sleep(2 * time.Second)
+//
+//			// Gửi báo cáo vào channel
+//			ch <- "Đã gửi mail thành công!"
+//
+//			fmt.Println("Nhân viên: Đã gửi xong và báo cáo cho sếp.")
+//		}()
+//
+//		// 3. Ở hàm main (Ông chủ): Đứng đợi ở "đường ống"
+//		fmt.Println("Ông chủ: Đang ngồi đợi báo cáo từ nhân viên...")
+//
+//		// Dòng này sẽ CHẶN (Block) hàm main lại cho đến khi có dữ liệu từ ch
+//		tin := <-ch
+//
+//		// 4. In kết quả nhận được
+//		fmt.Println("Ông chủ nhận được tin:", tin)
+//		fmt.Println("Ông chủ: Xong việc, đi về!")
+//	}
+//package main
+//
+//import "fmt"
+//
+//func main() {
+//	list := []string{"Email 1", "Email 2", "Email 3"}
+//	ch := make(chan string, len(list)) // Dùng Buffered để gửi không bị chặn ngay
+//
+//	go func() {
+//		for _, item := range list {
+//			ch <- item // Đẩy từng cái vào ống
+//		}
+//		close(ch) // Đóng ống sau khi gửi xong để bên nhận biết đường mà nghỉ
+//	}()
+//
+//	// Bên nhận: Dùng vòng lặp để lấy từng cái cho đến khi ống đóng
+//	for tin := range ch {
+//		fmt.Println("Đang xử lý:", tin)
+//	}
+//}
+
 package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
+	"sync"
 )
 
-// 1. Định nghĩa Interface và các Struct (như cũ)
-type Notify interface {
-	Send(msg string) string // Thay vì trả về error, trả về string để dễ dùng channel
-}
-
-type Email struct{ Name string }
-type Phone struct{ Number string }
-type Slack struct{ Webhook string }
-
-func (e Email) Send(msg string) string {
-	// Giả lập thời gian gửi ngẫu nhiên từ 1-5 giây
-	delay := rand.Intn(5) + 1
-	time.Sleep(time.Duration(delay) * time.Second)
-	return fmt.Sprintf("Email gửi tới %s sau %ds", e.Name, delay)
-}
-func (p Phone) Send(msg string) string {
-	delay := rand.Intn(5) + 1
-	time.Sleep(time.Duration(delay) * time.Second)
-	return fmt.Sprintf("Email gửi tới %s sau %ds", p.Number, delay)
-}
-
-func (s Slack) Send(msg string) string {
-	delay := rand.Intn(5) + 1
-	time.Sleep(time.Duration(delay) * time.Second)
-	return fmt.Sprintf("Email gửi tới %s sau %ds", s.Webhook, delay)
-}
-
 func main() {
-	results := make(chan string, 3)
-	list := []Notify{
-		Email{Name: "Sinh Viên Go"},
-		Phone{Number: "0911098342"},
-		Slack{Webhook: "http.com"},
+	numbers := []int{1, 2, 3, 4, 5}
+	ch := make(chan int)
+	var wg sync.WaitGroup // 1. Khai báo bộ đếm
+
+	for _, number := range numbers {
+		wg.Add(1) // 2. Thêm 1 người vào danh sách đợi
+		go func(n int) { // 3. Truyền number vào tham số n để tránh lỗi closure
+			defer wg.Done() // 4. Báo cáo khi làm xong
+			ch <- n * n
+		}(number)
 	}
 
-	for _, n := range list {
-		go func(target Notify) {
-			results <- target.Send("Chào bạn!")
-		}(n)
-	}
+	// 5. Chạy một Goroutine riêng để đợi tất cả làm xong rồi mới ĐÓNG ỐNG
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
 
-	fmt.Println("Đang đợi kết quả...")
-
-	// Tối ưu: Tạo 1 đồng hồ tổng cho cả quá trình
-	timeout := time.After(3 * time.Second)
-
-	for i := 0; i < len(list); i++ {
-		select {
-		case res := <-results:
-			fmt.Println("THÀNH CÔNG:", res)
-		case <-timeout: // Dùng chung 1 channel timeout
-			fmt.Println("THẤT BẠI: Quá thời gian tổng 3s, dừng các báo cáo còn lại!")
-			return // Thoát luôn vì đã hết giờ tổng
-		}
+	// 6. Nhận kết quả (Sạch sẽ, không cần time.Sleep)
+	for num := range ch {
+		fmt.Println("Kết quả sau khi bình phương:", num)
 	}
 }
