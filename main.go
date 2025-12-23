@@ -409,32 +409,133 @@
 
 package main
 
-import (
-	"fmt"
-	"sync"
-)
+import "fmt"
+
+//func main() {
+//	numbers := []int{1, 2, 3, 4, 5}
+//	ch := make(chan int)
+//	var wg sync.WaitGroup // 1. Khai báo bộ đếm
+//
+//	for _, number := range numbers {
+//		wg.Add(1)        // 2. Thêm 1 người vào danh sách đợi
+//		go func(n int) { // 3. Truyền number vào tham số n để tránh lỗi closure
+//			defer wg.Done() // 4. Báo cáo khi làm xong
+//			ch <- n * n
+//		}(number)
+//	}
+//
+//	// 5. Chạy một Goroutine riêng để đợi tất cả làm xong rồi mới ĐÓNG ỐNG
+//	go func() {
+//		wg.Wait()
+//		close(ch)
+//	}()
+//
+//	// 6. Nhận kết quả (Sạch sẽ, không cần time.Sleep)
+//	for num := range ch {
+//		fmt.Println("Kết quả sau khi bình phương:", num)
+//	}
+//}
+
+//func main() {
+//	list := [3]string{
+//		"Hello",
+//		"Hi",
+//		"How are you?",
+//	}
+//	ch := make(chan string)
+//	go func(list *[3]string) {
+//		for _, v := range list {
+//			ch <- v
+//		}
+//		close(ch)
+//	}(&list)
+//
+//	for msg := range ch {
+//		fmt.Println(msg)
+//	}
+//}
+
+//func main() {
+//	list := []string{"Tin 1", "Tin 2", "Tin 3"} // Dùng Slice cho "chuẩn Go"
+//	ch := make(chan string)
+//	timeout := time.After(3 * time.Second)
+//
+//	go func() {
+//		for _, v := range list {
+//			time.Sleep(2 * time.Second) // Nhân viên làm rất chậm (2 giây)
+//			ch <- v
+//		}
+//		close(ch)
+//	}()
+//
+//	// Ông chủ chỉ đợi mỗi tin tối đa 1 giây
+//	for i := 0; i < len(list); i++ {
+//		select {
+//		case msg := <-ch:
+//			fmt.Println("Nhận được:", msg)
+//		case <-timeout:
+//			fmt.Println("Bỏ qua: Tin này gửi lâu quá!")
+//		}
+//	}
+//}
+
+type Employee interface {
+	CalculateSalary() int
+	GetName() string
+}
+
+type FullTime struct {
+	Name   string
+	Salary int
+}
+
+func (f *FullTime) CalculateSalary() int {
+	return f.Salary
+}
+
+func (f *FullTime) GetName() string {
+	return f.Name
+}
+
+type Contractor struct {
+	Name       string
+	HourlyRate int
+	Hours      int
+}
+
+func (c *Contractor) CalculateSalary() int {
+	return c.Hours * c.HourlyRate
+}
+
+func (c *Contractor) GetName() string {
+	return c.Name
+}
+
+func SalaryEmployee(employee []Employee) {
+	for _, employee := range employee {
+		fmt.Printf("%s có lương là %d \n ", employee.GetName(), employee.CalculateSalary())
+	}
+}
 
 func main() {
-	numbers := []int{1, 2, 3, 4, 5}
-	ch := make(chan int)
-	var wg sync.WaitGroup // 1. Khai báo bộ đếm
+	employees := make([]Employee, 0, 100)
 
-	for _, number := range numbers {
-		wg.Add(1) // 2. Thêm 1 người vào danh sách đợi
-		go func(n int) { // 3. Truyền number vào tham số n để tránh lỗi closure
-			defer wg.Done() // 4. Báo cáo khi làm xong
-			ch <- n * n
-		}(number)
+	for i := 1; i <= 100; i++ {
+		if i%2 == 0 {
+			// Tạo nhân viên FullTime cho các số chẵn
+			employees = append(employees, &FullTime{
+				Name:   fmt.Sprintf("Nhân viên FT %d", i),
+				Salary: 15000000 + (i * 100000), // Lương tăng dần chút cho vui
+			})
+		} else {
+			// Tạo nhân viên Contractor cho các số lẻ
+			employees = append(employees, &Contractor{
+				Name:       fmt.Sprintf("Nhân viên CT %d", i),
+				HourlyRate: 200000,
+				Hours:      80 + (i % 40), // Số giờ ngẫu nhiên từ 80-120
+			})
+		}
 	}
 
-	// 5. Chạy một Goroutine riêng để đợi tất cả làm xong rồi mới ĐÓNG ỐNG
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	// 6. Nhận kết quả (Sạch sẽ, không cần time.Sleep)
-	for num := range ch {
-		fmt.Println("Kết quả sau khi bình phương:", num)
-	}
+	SalaryEmployee(employees)
 }
