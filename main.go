@@ -407,8 +407,6 @@
 //	}
 //}
 
-package main
-
 //func main() {
 //	numbers := []int{1, 2, 3, 4, 5}
 //	ch := make(chan int)
@@ -588,3 +586,149 @@ package main
 //	fmt.Println("Gốc:", rawText)
 //	fmt.Println("Sau xử lý:", finalText)
 //}
+
+//package main
+//
+//import (
+//	"sync"
+//	"time"
+//)
+
+//// 1. Định nghĩa bộ khung Interface
+//type Storage interface {
+//	Save(id string, data string) error
+//	Load(id string) (string, error)
+//}
+//
+//// 2. Triển khai MemoryStorage (Lưu trong RAM)
+//type MemoryStorage struct {
+//	db map[string]string
+//}
+//
+//func NewMemoryStorage() *MemoryStorage {
+//	return &MemoryStorage{
+//		db: make(map[string]string), // Khởi tạo map để tránh lỗi nil
+//	}
+//}
+//
+//func (m *MemoryStorage) Save(id string, data string) error {
+//	m.db[id] = data
+//	fmt.Printf("[Memory] Đã lưu ID: %s\n", id)
+//	return nil
+//}
+//
+//func (m *MemoryStorage) Load(id string) (string, error) {
+//	val, ok := m.db[id]
+//	if !ok {
+//		return "", errors.New("không tìm thấy ID trong bộ nhớ") // Trả về lỗi nếu key không tồn tại
+//	}
+//	return val, nil
+//}
+//
+//// 3. Triển khai FileStorage (Mô phỏng lưu vào File)
+//type FileStorage struct{}
+//
+//func (f *FileStorage) Save(id string, data string) error {
+//	// Mô phỏng ghi file thực tế
+//	fmt.Printf("[File] Đang ghi vào file %s.txt: %s\n", id, data)
+//	return nil
+//}
+//
+//func (f *FileStorage) Load(id string) (string, error) {
+//	fmt.Printf("[File] Đang đọc file %s.txt...\n", id)
+//	return "Dữ liệu từ File", nil // Trả về dữ liệu giả lập
+//}
+//
+//// 4. Hàm đồng bộ dữ liệu - CHỖ QUAN TRỌNG NHẤT
+//// Hàm này chỉ nhận Interface, nên nó có thể kết nối bất kỳ loại Storage nào
+//func SyncData(id string, source Storage, dest Storage) error {
+//	// Bước 1: Lấy dữ liệu từ nguồn
+//	data, err := source.Load(id)
+//	if err != nil {
+//		return err
+//	}
+//
+//	// Bước 2: Ghi dữ liệu vào đích
+//	return dest.Save(id, data)
+//}
+//
+//func main() {
+//	// Khởi tạo các kho lưu trữ
+//	mem := NewMemoryStorage()
+//	file := &FileStorage{}
+//
+//	// THỬ NGHIỆM 1: Lưu vào RAM rồi đồng bộ sang File
+//	fmt.Println("--- Thử nghiệm 1: RAM -> File ---")
+//	mem.Save("job_01", "Nội dung cực kỳ quan trọng")
+//
+//	err := SyncData("job_01", mem, file)
+//	if err != nil {
+//		fmt.Println("Lỗi:", err)
+//	}
+//
+//	// THỬ NGHIỆM 2: Đồng bộ từ File ngược lại RAM
+//	fmt.Println("\n--- Thử nghiệm 2: File -> RAM ---")
+//	err = SyncData("config_file", file, mem)
+//	if err != nil {
+//		fmt.Println("Lỗi:", err)
+//	}
+//}
+
+//func luocTrung(id int, wg *sync.WaitGroup) {
+//	// Khi hàm này chạy xong, tự động gọi Done()
+//	defer wg.Done()
+//
+//	fmt.Printf("Quả trứng %d đang luộc...\n", id)
+//	time.Sleep(2 * time.Second) // Giả lập thời gian luộc
+//	fmt.Printf("Quả trứng %d đã chín!\n", id)
+//}
+//
+//func main() {
+//	var wg sync.WaitGroup // Khai báo chiếc "còi"
+//
+//	for i := 1; i <= 3; i++ {
+//		wg.Add(1)            // Điểm danh thêm 1 người thợ
+//		go luocTrung(i, &wg) // Giao việc (Phải truyền con trỏ wg)
+//	}
+//
+//	fmt.Println("Quản đốc đang ngồi đợi...")
+//	wg.Wait() // Đứng đợi ở đây cho đến khi 3 lần Done() được gọi
+//	fmt.Println("Tất cả trứng đã chín. Ăn thôi!")
+//}
+
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func Runner(name string, speed time.Duration, wg *sync.WaitGroup) {
+	// 1. Đảm bảo báo cáo hoàn thành khi hàm thoát
+	wg.Add(1) // Điểm danh thêm 1 người thợ
+	defer wg.Done()
+	// 2. Vòng lặp chạy 5 bước
+	for i := 0; i <= 5; i++ {
+		// In tiến trình và Sleep
+		fmt.Printf("Runner %s speed %v m\n", name, i)
+		time.Sleep(1 * time.Second)
+	}
+
+	// 3. Thông báo về đích
+	fmt.Printf("Runner %s finished \n", name)
+}
+
+func main() {
+	// Khởi tạo WaitGroup
+	var wg sync.WaitGroup
+	// Thêm 2 slot điểm danh
+	for i := 1; i <= 2; i++ {
+
+		go Runner(fmt.Sprintf("Runner %d", i), time.Second, &wg)
+	}
+
+	fmt.Println("Trọng tài đang ngồi đợi...")
+	wg.Wait() // Đứng đợi ở đây cho đến khi 3 lần Done() được gọi
+	fmt.Println("Kết thúc cuộc đua")
+}
