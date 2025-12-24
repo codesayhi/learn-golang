@@ -696,6 +696,42 @@
 //	fmt.Println("Tất cả trứng đã chín. Ăn thôi!")
 //}
 
+//package main
+//
+//import (
+//	"fmt"
+//	"sync"
+//	"time"
+//)
+//
+//func Runner(name string, speed time.Duration, wg *sync.WaitGroup) {
+//	// 1. Đảm bảo báo cáo hoàn thành khi hàm thoát
+//	defer wg.Done()
+//	// 2. Vòng lặp chạy 5 bước
+//	for i := 0; i <= 5; i++ {
+//		// In tiến trình và Sleep
+//		fmt.Printf("Runner %s speed %v m\n", name, i)
+//		time.Sleep(1 * time.Second)
+//	}
+//
+//	// 3. Thông báo về đích
+//	fmt.Printf("Runner %s finished \n", name)
+//}
+//
+//func main() {
+//	// Khởi tạo WaitGroup
+//	var wg sync.WaitGroup
+//	// Thêm 2 slot điểm danh
+//	for i := 1; i <= 2; i++ {
+//		wg.Add(1) // Điểm danh thêm 1 người thợ
+//		go Runner(fmt.Sprintf("Runner %d", i), time.Second, &wg)
+//	}
+//
+//	fmt.Println("Trọng tài đang ngồi đợi...")
+//	wg.Wait() // Đứng đợi ở đây cho đến khi 3 lần Done() được gọi
+//	fmt.Println("Kết thúc cuộc đua")
+//}
+
 package main
 
 import (
@@ -704,31 +740,58 @@ import (
 	"time"
 )
 
-func Runner(name string, speed time.Duration, wg *sync.WaitGroup) {
-	// 1. Đảm bảo báo cáo hoàn thành khi hàm thoát
-	wg.Add(1) // Điểm danh thêm 1 người thợ
+// Đề bài chi tiết:
+//
+// Hàm Producer(ch chan int, wg *sync.WaitGroup):
+//
+// Chạy vòng lặp từ 1 đến 10.
+//
+// Gửi từng số vào channel: ch <- i.
+//
+// Sau khi gửi hết 10 số, gọi close(ch) để báo cho bên nhận biết là "hết hàng rồi".
+//
+// Đừng quên defer wg.Done().
+func Producer(ch chan int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// 2. Vòng lặp chạy 5 bước
-	for i := 0; i <= 5; i++ {
-		// In tiến trình và Sleep
-		fmt.Printf("Runner %s speed %v m\n", name, i)
-		time.Sleep(1 * time.Second)
+	for i := 1; i <= 10; i++ {
+		ch <- i
 	}
-
-	// 3. Thông báo về đích
-	fmt.Printf("Runner %s finished \n", name)
+	close(ch)
 }
 
-func main() {
-	// Khởi tạo WaitGroup
-	var wg sync.WaitGroup
-	// Thêm 2 slot điểm danh
-	for i := 1; i <= 2; i++ {
-
-		go Runner(fmt.Sprintf("Runner %d", i), time.Second, &wg)
+// Hàm Consumer(ch chan int, wg *sync.WaitGroup):
+//
+// Sử dụng vòng lặp for v := range ch để "hứng" dữ liệu. Vòng lặp này sẽ tự động dừng khi channel bị đóng.
+//
+// Với mỗi số v nhận được, in ra: "Nhận được %d, bình phương là %d".
+//
+// Gọi defer wg.Done().
+func Consumer(ch chan int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	time.Sleep(3 * time.Second)
+	for v := range ch {
+		fmt.Printf("Nhận được %d, bình phương là %d \n", v, v*v)
 	}
 
-	fmt.Println("Trọng tài đang ngồi đợi...")
-	wg.Wait() // Đứng đợi ở đây cho đến khi 3 lần Done() được gọi
-	fmt.Println("Kết thúc cuộc đua")
+}
+
+// Hàm main:
+//
+// Tạo channel: ch := make(chan int).
+//
+// wg.Add(2).
+//
+// Chạy 2 Goroutines đồng thời.
+//
+// wg.Wait().
+func main() {
+	ch := make(chan int)
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	go Producer(ch, &wg)
+	go Consumer(ch, &wg)
+	fmt.Println("Đang đợi xử lí")
+	wg.Wait()
+	fmt.Println("Hoàn thành")
 }
